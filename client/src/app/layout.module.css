@@ -1,0 +1,29 @@
+/* Header and Footer shared styles */
+.header,
+.footer {
+  background-color: white; /* White background for header and footer */
+  color: black;            /* Black text for contrast */
+  padding: 20px;
+}
+
+/* Header container flex layout */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Footer text centering and smaller font */
+.footer {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* Optional main content area style */
+.main {
+  min-height: 80vh;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+  color: white; /* Assuming main on black background */
+}

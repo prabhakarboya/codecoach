@@ -1,0 +1,31 @@
+/* src/app/styles/global.css */
+
+/* Global Styles */
+
+body {
+  background-color: black; /* Black background for the main page */
+  color: white; /* Default text color white for visibility */
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Links color */
+a {
+  color: #1e90ff; /* Optional: make links blue */
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  text-decoration: underline;
+}
+
+/* Headers and text default color */
+h1, h2, h3, h4, h5, h6, p, span, li {
+  color: white;
+}
