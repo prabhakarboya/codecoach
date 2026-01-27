@@ -71,7 +71,7 @@ export default function HomePage() {
             textAlign: "center"
           }}
         >
-          "CodeCoach - Your personal coding mentor at your fingertips."
+          {"CodeCoach - Your personal coding mentor at your fingertips."}
         </p>
       </main>
     );
@@ -153,7 +153,7 @@ export default function HomePage() {
                 textAlign: "center"
               }}
             >
-              "CodeCoach - Your personal coding mentor at your fingertips."
+              {"CodeCoach - Your personal coding mentor at your fingertips."}
             </p>
           </>
         )}
@@ -162,7 +162,6 @@ export default function HomePage() {
     </div>
   );
 }
-
 
 const buttonStyle: React.CSSProperties = {
   padding: "8px 16px",
