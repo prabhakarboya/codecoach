@@ -18,39 +18,58 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectDB();
 
-// CORS settings to allow frontend localhost:3000 with credentials (cookies)
+// =========================
+// CORS CONFIG
+// =========================
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://codecoach-owuk5cbng-prabhakars-projects-d5c60e82.vercel.app"
+  "https://codecoach-owuk5cbng-prabhakars-projects-d5c60e82.vercel.app",
 ];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // allow requests with no origin (like curl or Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS policy: Not allowed by CORS"));
+    }
+  },
+  credentials: true, // allow cookies
+};
+
 app.use(cors(corsOptions));
 
-// Parse JSON request bodies and cookies
+// =========================
+// PARSERS
+// =========================
 app.use(express.json());
 app.use(cookieParser());
 
-// Mount routers
+// =========================
+// ROUTES
+// =========================
 app.use("/api/auth", authRoutes);
 app.use("/api/judge", judgeRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/user", userRoutes);
 
-// Root route for sanity check
+// Root route
 app.get("/", (req, res) => {
   res.send("Welcome to the CodeCoach AI Backend API");
 });
 
-// 404 handler - catch all unknown routes
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ status: "error", message: "Not Found" });
 });
 
-// Centralized error-handling middleware - MUST be last
+// Centralized error-handling
 app.use((err, req, res, next) => {
   console.error(err.stack);
   const status = err.status || 500;
   const message = err.message || "Internal Server Error";
-
   res.status(status).json({ status: "error", message });
 });
 
