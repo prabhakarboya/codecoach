@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 
 declare global {
@@ -29,24 +29,17 @@ export default function FeedbackPage() {
     document.body.appendChild(script);
   }, []);
 
-  useEffect(() => {
-    if (id && puterLoaded) {
-      const code = localStorage.getItem("submittedCode") || "";
-      const title = localStorage.getItem("problemTitle") || "";
-      const description = localStorage.getItem("problemDescription") || "";
-      fetchFeedback(title, description, code);
-    }
-  }, [id, puterLoaded]);
+  // Fetch feedback function wrapped in useCallback to avoid useEffect warning
+  const fetchFeedback = useCallback(
+    async (title: string, description: string, code: string) => {
+      if (!puterLoaded || !window.puter) return;
 
-  const fetchFeedback = async (title: string, description: string, code: string) => {
-    if (!puterLoaded || !window.puter) return;
-
-    setLoading(true);
-    try {
-      const prompt = `
+      setLoading(true);
+      try {
+        const prompt = `
 You are an expert coding interviewer AI.
 Evaluate the user's code submission and give detailed feedback.
-Then, generate 7-8 follow-up interview questions starting with "What is the time complexity of the code?".
+Then, generate 7-8 follow-up interview questions based on the code submitted.
 Include code snippets if question requires them.
 
 Problem Title: ${title}
@@ -64,36 +57,55 @@ Follow-up Questions:
 ...
 `;
 
-      const response = await window.puter.ai.chat(prompt, { model: "gpt-5-nano" });
+        const response = await window.puter.ai.chat(prompt, { model: "gpt-5-nano" });
 
-      let text = "";
-      if (typeof response === "string") {
-        text = response;
-      } else if (response?.message?.content) {
-        text = response.message.content;
-      }
+        let text = "";
+        if (typeof response === "string") {
+          text = response;
+        } else if (response?.message?.content) {
+          text = response.message.content;
+        }
 
-      // Parse feedback and questions
-      const splitIndex = text.indexOf("Follow-up Questions:");
-      if (splitIndex === -1) {
-        setFeedback(text.trim());
+        // Parse feedback and questions
+        const splitIndex = text.indexOf("Follow-up Questions:");
+        if (splitIndex === -1) {
+          setFeedback(text.trim());
+          setFollowUps([]);
+        } else {
+          const feedbackText = text
+            .substring(0, splitIndex)
+            .replace(/<FEEDBACK>/gi, "")
+            .trim();
+          const questionsText = text
+            .substring(splitIndex + "Follow-up Questions:".length)
+            .trim();
+
+          setFeedback(feedbackText);
+
+          const questions = questionsText
+            .split(/\n\d+\.\s+/)
+            .filter((q) => q.trim() !== "");
+          setFollowUps(questions.slice(0, 8));
+        }
+      } catch (err) {
+        console.error("Error fetching feedback:", err);
+        setFeedback("Error fetching feedback. Please try again.");
         setFollowUps([]);
-      } else {
-        const feedbackText = text.substring(0, splitIndex).replace(/<FEEDBACK>/gi, "").trim();
-        const questionsText = text.substring(splitIndex + "Follow-up Questions:".length).trim();
-
-        setFeedback(feedbackText);
-
-        const questions = questionsText.split(/\n\d+\.\s+/).filter(q => q.trim() !== "");
-        setFollowUps(questions.slice(0, 8));
       }
-    } catch (err) {
-      console.error("Error fetching feedback:", err);
-      setFeedback("Error fetching feedback. Please try again.");
-      setFollowUps([]);
+      setLoading(false);
+    },
+    [puterLoaded]
+  );
+
+  // Run fetchFeedback when id or puterLoaded changes
+  useEffect(() => {
+    if (id && puterLoaded) {
+      const code = localStorage.getItem("submittedCode") || "";
+      const title = localStorage.getItem("problemTitle") || "";
+      const description = localStorage.getItem("problemDescription") || "";
+      fetchFeedback(title, description, code);
     }
-    setLoading(false);
-  };
+  }, [id, puterLoaded, fetchFeedback]);
 
   const handleAnswerChange = (index: number, value: string) => {
     setAnswers({ ...answers, [index]: value });
@@ -111,7 +123,7 @@ Follow-up Questions:
 Evaluate the user's answers to your follow-up questions.
 Provide constructive feedback and a short score (out of 10).
 Do not include any instructions, extra text, or conversational language.
-Focus on clarity, precision, and usefulness of each answer.
+Focus on clarity, precision, and usefulness of each answer. If answer is wrong or not answered, give simple and correct solution for each question.
 ${joinedAnswers}
 `;
 
@@ -128,34 +140,55 @@ ${joinedAnswers}
     }
   };
 
-  if (!puterLoaded) return <p style={{ fontStyle: "italic", color: "#666" }}>Loading AI engine...</p>;
-  if (loading) return <p style={{ fontStyle: "italic", color: "#666" }}>Loading feedback...</p>;
+  if (!puterLoaded)
+    return (
+      <p style={{ fontStyle: "italic", color: "#666" }}>Loading AI engine...</p>
+    );
+  if (loading)
+    return <p style={{ fontStyle: "italic", color: "#666" }}>Loading feedback...</p>;
 
   return (
-    <div style={{
-      maxWidth: 760,
-      margin: "auto",
-      padding: 20,
-      fontFamily: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
-      color: "#222"
-    }}>
-      <h2 style={{ borderBottom: "2px solid #0070f3", paddingBottom: 8 }}>Feedback</h2>
-      <pre style={{
-        backgroundColor: "#f9f9f9",
-        padding: 15,
-        borderRadius: 6,
-        whiteSpace: "pre-wrap",
-        lineHeight: 1.5,
-        overflowWrap: "break-word",
-        border: "1px solid #ccc",
-        boxShadow: "inset 0 0 5px #eee",
-        maxHeight: 180,
-        overflowY: "auto"
-      }}>
+    <div
+      style={{
+        maxWidth: 760,
+        margin: "auto",
+        padding: 20,
+        fontFamily: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif",
+        color: "#222",
+      }}
+    >
+      <h2
+        style={{
+          borderBottom: "2px solid #0070f3",
+          paddingBottom: 8,
+        }}
+      >
+        Feedback
+      </h2>
+      <pre
+        style={{
+          backgroundColor: "#f9f9f9",
+          padding: 15,
+          borderRadius: 6,
+          whiteSpace: "pre-wrap",
+          lineHeight: 1.5,
+          overflowWrap: "break-word",
+          border: "1px solid #ccc",
+          boxShadow: "inset 0 0 5px #eee",
+          maxHeight: 180,
+          overflowY: "auto",
+        }}
+      >
         {feedback}
       </pre>
 
-      <h3 style={{ marginTop: 30, borderBottom: "1px solid #ddd", paddingBottom: 6 }}>
+      <h3
+        style={{
+          marginTop: 30,
+          borderBottom: "1px solid #ddd",
+          paddingBottom: 6,
+        }}
+      >
         Follow-up Questions
       </h3>
       {followUps.length === 0 && <p>No follow-up questions generated.</p>}
@@ -231,8 +264,8 @@ ${joinedAnswers}
             marginLeft: "auto",
             marginRight: "auto",
           }}
-          onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#0044a3")}
-          onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#005cd1")}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#0044a3")}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#005cd1")}
           aria-label="Submit your follow-up answers"
         >
           Submit Answers
@@ -243,7 +276,7 @@ ${joinedAnswers}
         <div
           style={{
             marginTop: 30,
-            backgroundColor: "#f0f4ff", // light blue
+            backgroundColor: "#f0f4ff",
             padding: 20,
             borderRadius: 10,
             color: "#1a237e",
