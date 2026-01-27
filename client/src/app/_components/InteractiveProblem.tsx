@@ -91,7 +91,9 @@ export default function InteractiveProblem({ problem }: Props) {
     if (!problem || !code.trim()) return;
     setLoadingRun(true);
     try {
-      const response = await fetch("`${process.env.NEXT_PUBLIC_API_URL}/judge/run", {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+const response = await fetch(`${BASE_URL}/judge/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, language, testCases: problem.testCases }),
