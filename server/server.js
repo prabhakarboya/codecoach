@@ -19,10 +19,10 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 
 // CORS settings to allow frontend localhost:3000 with credentials (cookies)
-const corsOptions = {
-  origin: "http://localhost:3000",
-  credentials: true,
-};
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://codecoach-owuk5cbng-prabhakars-projects-d5c60e82.vercel.app"
+];
 app.use(cors(corsOptions));
 
 // Parse JSON request bodies and cookies
