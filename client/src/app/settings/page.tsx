@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
+  process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export default function SettingsPage() {
   const router = useRouter();
