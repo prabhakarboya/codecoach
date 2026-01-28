@@ -93,7 +93,7 @@ export default function InteractiveProblem({ problem }: Props) {
     try {
       const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
-const response = await fetch(`${BASE_URL}/api/judge/run`, {
+const response = await fetch(`${BASE_URL}/judge/run`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, language, testCases: problem.testCases }),
