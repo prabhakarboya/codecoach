@@ -14,7 +14,7 @@ export default function ContactPage() {
 
     try {
       // Example POST request to backend (update URL later)
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/contact`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, message }),
