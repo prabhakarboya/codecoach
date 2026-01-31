@@ -1,24 +1,19 @@
-import axios from 'axios';
-
-// Base URL of your backend API
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || `${process.env.NEXT_PUBLIC_API_BASE_URL}`;
-
+import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: true, // Include cookies if your backend uses sessions
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Add request interceptor to attach token from localStorage to each request
 axiosInstance.interceptors.request.use(
   (config) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken'); // Or wherever you save your token
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("authToken");
       if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
+        config.headers.Authorization = `Bearer ${token}`;
       }
     }
     return config;
